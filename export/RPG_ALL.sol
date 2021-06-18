@@ -1551,13 +1551,14 @@ contract RPGVestingE {
     //bool private _revocable;
 
     constructor (address addr) public {
-        require(addr != address(0),'Initialize only once!');
+        require(addr != address(0));
 
         _vestingaddr = addr;
     }
     
     function init(IERC20 token,address[3] memory beneficiarys, uint256 total) public returns(bool){
         require(_vestingaddr == msg.sender);
+        require(beneficiarys[0] == address(0),'Initialize only once!');
         
         require(address(token) != address(0));
         require(beneficiarys[0] != address(0));
