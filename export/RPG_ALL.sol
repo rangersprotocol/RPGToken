@@ -926,6 +926,7 @@ contract RPGVestingA {
     mapping(address => uint256) private _released;
     
     //event 
+    event event_set_can_claim();
     event event_claimed(address user,uint256 amount);
     event event_change_address(address oldaddr,address newaddr);
     
@@ -999,9 +1000,11 @@ contract RPGVestingA {
     
     function setcanclaim() public {
         require(_vestingaddr == msg.sender);
-        require(_canclaim == false);
+        require(!_canclaim,'_canclaim is not false!');
         
         _canclaim = true;
+        
+        emit event_set_can_claim();
     }
 
     /**
@@ -1031,7 +1034,7 @@ contract RPGVestingA {
     function claim() public returns(uint256) {
         require(_start > 0);
         require(_beneficiary_total[msg.sender] > 0);
-        require(_canclaim == true);
+        require(_canclaim,'claim not allowed!');
         
         uint256 amount = calcvesting(msg.sender).sub(_released[msg.sender]);
         if(amount > 0)
@@ -1548,7 +1551,7 @@ contract RPGVestingE {
     //bool private _revocable;
 
     constructor (address addr) public {
-        require(addr != address(0));
+        require(addr != address(0),'Initialize only once!');
 
         _vestingaddr = addr;
     }
