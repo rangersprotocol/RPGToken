@@ -983,6 +983,14 @@ contract RPGVestingA {
     function beneficiary() public view returns (address[] memory) {
         return _beneficiarys;
     }
+    
+    /**
+     * @return total tokens of the beneficiary address.
+     */
+    function beneficiarytotal(address addr) public view returns (uint256) {
+    	require(_beneficiary_total[addr] != 0,'not in beneficiary list');
+        return _beneficiary_total[addr];
+    }
 
     /**
      * @return total of the tokens.
@@ -1157,6 +1165,14 @@ contract RPGVestingB {
      */
     function beneficiary() public view returns (address[] memory) {
         return _beneficiarys;
+    }
+    
+    /**
+     * @return total tokens of the beneficiary address.
+     */
+    function beneficiarytotal(address addr) public view returns (uint256) {
+    	require(_beneficiary_total[addr] != 0,'not in beneficiary list');
+        return _beneficiary_total[addr];
     }
     
     /**
