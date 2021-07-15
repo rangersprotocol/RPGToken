@@ -1574,7 +1574,7 @@ contract RPGVestingE {
     
     function init(IERC20 token,address[3] memory beneficiarys, uint256 total) public returns(bool){
         require(_vestingaddr == msg.sender);
-        require(beneficiarys[0] == address(0),'Initialize only once!');
+        require(_beneficiarys[0] == address(0),'Initialize only once!');
         
         require(address(token) != address(0));
         require(beneficiarys[0] != address(0));
