@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.17;
 
 /**
  * Utility library of inline functions on addresses
@@ -1647,7 +1647,7 @@ contract RPGVestingE {
 
 }
 
-contract RPGVestingF {
+contract RPGVestingF is Ownable{
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -1670,10 +1670,11 @@ contract RPGVestingF {
     event event_change_address(address oldaddr,address newaddr);
     
     constructor(uint256 releasealldays) public {
-		_releasealldays = releasealldays;
+        require(releasealldays > 0);
+		    _releasealldays = releasealldays;
     }
     
-    function init(IERC20 token, uint256 total,address[] memory beneficiarys,uint256[] memory amounts) public returns(bool) {
+    function init(IERC20 token, uint256 total,address[] calldata beneficiarys,uint256[] calldata amounts) onlyOwner external returns(bool) {
         //require(_vestingaddr == msg.sender);
         require(_beneficiarys.length == 0);     //run once
         
@@ -1700,9 +1701,9 @@ contract RPGVestingF {
         return true;
     }
     
-    function setStart(uint256 newStart) external {
+    function setStart(uint256 newStart) onlyOwner external {
         //require(_vestingaddr == msg.sender);
-        require(newStart > 0 && _start == 0);
+        require(newStart > block.timestamp && _start == 0);
         
         _start = newStart;
     }
@@ -1743,7 +1744,7 @@ contract RPGVestingF {
         return _canclaim;
     }
     
-    function setcanclaim() external {
+    function setcanclaim() onlyOwner external {
         //require(_vestingaddr == msg.sender);
         require(!_canclaim,'_canclaim is not false!');
         
@@ -1801,6 +1802,7 @@ contract RPGVestingF {
     }
     
     function changeaddress(address oldaddr,address newaddr) external {
+        require(newaddr != address(0));
         require(_beneficiarys.length > 0);
         require(_beneficiary_total[newaddr] == 0);
         
