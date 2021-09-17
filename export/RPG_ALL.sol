@@ -1647,7 +1647,7 @@ contract RPGVestingE {
 
 }
 
-contract RPGVestingF is Ownable{
+contract RPGVestingF {
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -1657,7 +1657,6 @@ contract RPGVestingF is Ownable{
     IERC20 private _token;
     uint256 private _total;
     uint256 private _start = 0;
-    bool    private _canclaim = false;
     address[] private _beneficiarys;
     uint256 constant _duration = 86400;
     uint256 _releasealldays;
@@ -1674,7 +1673,7 @@ contract RPGVestingF is Ownable{
 		    _releasealldays = releasealldays;
     }
     
-    function init(IERC20 token, uint256 total,address[] calldata beneficiarys,uint256[] calldata amounts) onlyOwner external returns(bool) {
+    function init(IERC20 token, uint256 total,address[] calldata beneficiarys,uint256[] calldata amounts) external returns(bool) {
         //require(_vestingaddr == msg.sender);
         require(_beneficiarys.length == 0);     //run once
         
@@ -1701,7 +1700,7 @@ contract RPGVestingF is Ownable{
         return true;
     }
     
-    function setStart(uint256 newStart) onlyOwner external {
+    function setStart(uint256 newStart) external {
         //require(_vestingaddr == msg.sender);
         require(newStart > block.timestamp && _start == 0);
         
@@ -1736,22 +1735,6 @@ contract RPGVestingF is Ownable{
     function total() public view returns (uint256) {
         return _total;
     }
-    
-    /**
-     * @return canclaim.
-     */
-    function canclaim() public view returns (bool) {
-        return _canclaim;
-    }
-    
-    function setcanclaim() onlyOwner external {
-        //require(_vestingaddr == msg.sender);
-        require(!_canclaim,'_canclaim is not false!');
-        
-        _canclaim = true;
-        
-        emit event_set_can_claim();
-    }
 
     /**
      * @return total number can release to now.
@@ -1780,7 +1763,6 @@ contract RPGVestingF is Ownable{
     function claim() public returns(uint256) {
         require(_start > 0);
         require(_beneficiary_total[msg.sender] > 0);
-        require(_canclaim,'claim not allowed!');
         
         uint256 amount = calcvesting(msg.sender).sub(_released[msg.sender]);
         if(amount > 0)
