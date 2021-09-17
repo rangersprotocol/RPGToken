@@ -1760,7 +1760,7 @@ contract RPGVestingF {
      * claim all the tokens to now
      * @return claim number this time .
      */
-    function claim() public returns(uint256) {
+    function claim() external returns(uint256) {
         require(_start > 0);
         require(_beneficiary_total[msg.sender] > 0);
         
