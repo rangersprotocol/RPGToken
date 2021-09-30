@@ -717,7 +717,7 @@ contract RPG is
     function transfer(address to, uint256 value) public returns (bool) {
         require(limit[msg.sender] != 1, 'from address is limited.');
         require(limit[to] != 2, 'to address is limited.');
-        
+
         _transfer(msg.sender, to, value);
 
         return true;
@@ -740,11 +740,11 @@ contract RPGVesting is Ownable {
     RPGVestingE private _fund;
 
     uint256 public INITIAL_SUPPLY;
-    
+
     event event_debug(uint256 amount);
 
     constructor() public {
-        
+
     }
 
     function init(
@@ -758,7 +758,7 @@ contract RPGVesting is Ownable {
         address[3] memory fund              //20%----E
     ) public onlyOwner {
         require(address(_investors) == address(0));     //run once
-        
+
         //para check
         require(address(token) != address(0));
         require(address(investors_addr) != address(0));
@@ -774,7 +774,7 @@ contract RPGVesting is Ownable {
         require(fund[1] != address(0));
         require(fund[2] != address(0));
         //run check
-        
+
         _token = token;
         _investors = investors_addr;
         _incubator_adviser = incubator_adviser_addr;
@@ -783,7 +783,7 @@ contract RPGVesting is Ownable {
         _fund = fund_addr;
         INITIAL_SUPPLY = _token.INITIAL_SUPPLY();
         require(_token.balanceOf(address(this)) == INITIAL_SUPPLY);
-        
+
         // create all vesting contracts
         // _investors          = new RPGVestingA(_token,INITIAL_SUPPLY.mul(9).div(100));
         // _incubator_adviser  = new RPGVestingB(_token,INITIAL_SUPPLY.mul(7).div(100));
@@ -804,7 +804,7 @@ contract RPGVesting is Ownable {
         _token.transfer(address(_development)       , _development.total());
         _token.transfer(address(_community)         , _community.total());
         _token.transfer(address(_fund)              , _fund.total());
-        
+
     }
 
     function StartIDO(uint256 start) public onlyOwner {
@@ -813,7 +813,7 @@ contract RPGVesting is Ownable {
         _investors.setStart(start);
         _fund.setStart(start);
     }
-    
+
     function StartMainnet(uint256 start) public onlyOwner {
         require(start >= block.timestamp);
         require(start >= _investors.start());
@@ -822,90 +822,90 @@ contract RPGVesting is Ownable {
         _development.setStart(start);
         _community.setStart(start);
     }
-    
+
     function StartInvestorsClaim() public onlyOwner {
         require(_investors.start() > 0 && _investors.start() < block.timestamp);
-        
+
         _investors.setcanclaim();
     }
-    
+
     function investors() public view returns (address) {
         return address(_investors);
     }
-    
+
     function incubator_adviser() public view returns (address) {
         return address(_incubator_adviser);
     }
-    
+
     function development() public view returns (address) {
         return address(_development);
     }
-    
+
     function community() public view returns (address) {
         return address(_community);
     }
-    
+
     function fund() public view returns (address) {
         return address(_fund);
     }
-    
+
     ////calc vesting number/////////////////////////////
     function unlocked_investors_vesting(address user) public view returns(uint256) {
         return _investors.calcvesting(user);
     }
-    
+
     function unlocked_incubator_adviser_vesting(address user) public view returns(uint256) {
         return _incubator_adviser.calcvesting(user);
     }
-    
+
     function unlocked_development_vesting() public view returns(uint256) {
         return _development.calcvesting();
     }
-    
+
     function unlocked_community_vesting() public view returns(uint256) {
         return _community.calcvesting();
     }
-    
+
     // function calc_fund_vesting() public view returns(uint256) {
     //     return _fund.calcvesting();
     // }
-    
+
     ///////claimed amounts//////////////////////////////
     function claimed_investors(address user) public view returns(uint256){
         return _investors.claimed(user);
     }
-    
+
     function claimed_incubator_adviser(address user) public view returns(uint256){
         return _incubator_adviser.claimed(user);
     }
-    
+
     function claimed_development() public view returns(uint256){
         return _development.claimed();
     }
-    
+
     function claimed_community() public view returns(uint256){
         return _community.claimed();
     }
-    
+
     //////change address/////////////////////////////////
     function investors_changeaddress(address oldaddr,address newaddr) onlyOwner public{
         require(newaddr != address(0));
-        
+
         _investors.changeaddress(oldaddr,newaddr);
     }
-    
+
     function incubator_adviser_changeaddress(address oldaddr,address newaddr) onlyOwner public{
         require(newaddr != address(0));
-        
+
         _incubator_adviser.changeaddress(oldaddr,newaddr);
     }
-    
+
     function community_changeaddress(address newaddr) onlyOwner public{
         require(newaddr != address(0));
-        
+
         _community.changeaddress(newaddr);
     }
-    
+
 }
 
 contract RPGVestingA {
@@ -924,36 +924,36 @@ contract RPGVestingA {
     uint256 constant _releasealldays = 400;
     mapping(address => uint256) private _beneficiary_total;
     mapping(address => uint256) private _released;
-    
-    //event 
+
+    //event
     event event_set_can_claim();
     event event_claimed(address user,uint256 amount);
     event event_change_address(address oldaddr,address newaddr);
-    
+
     constructor(address addr) public {
         require(addr != address(0));
 
         _vestingaddr = addr;
     }
-    
+
     function init(IERC20 token, uint256 total,address[] memory beneficiarys,uint256[] memory amounts) public returns(bool) {
         require(_vestingaddr == msg.sender);
         require(_beneficiarys.length == 0);     //run once
-        
+
         require(address(token) != address(0));
         require(total > 0);
         require(beneficiarys.length == amounts.length);
-        
+
         _token = token;
         _total = total;
-        
+
         uint256 all = 0;
         for(uint256 i = 0 ; i < amounts.length; i++)
         {
             all = all.add(amounts[i]);
         }
         require(all == _total);
-        
+
         _beneficiarys = beneficiarys;
         for(uint256 i = 0 ; i < _beneficiarys.length; i++)
         {
@@ -962,11 +962,11 @@ contract RPGVestingA {
         }
         return true;
     }
-    
+
     function setStart(uint256 newStart) public {
         require(_vestingaddr == msg.sender);
         require(newStart > 0 && _start == 0);
-        
+
         _start = newStart;
     }
 
@@ -983,7 +983,7 @@ contract RPGVestingA {
     function beneficiary() public view returns (address[] memory) {
         return _beneficiarys;
     }
-    
+
     /**
      * @return total tokens of the beneficiary address.
      */
@@ -998,20 +998,20 @@ contract RPGVestingA {
     function total() public view returns (uint256) {
         return _total;
     }
-    
+
     /**
      * @return canclaim.
      */
     function canclaim() public view returns (bool) {
         return _canclaim;
     }
-    
+
     function setcanclaim() public {
         require(_vestingaddr == msg.sender);
         require(!_canclaim,'_canclaim is not false!');
-        
+
         _canclaim = true;
-        
+
         emit event_set_can_claim();
     }
 
@@ -1022,9 +1022,9 @@ contract RPGVestingA {
         require(_start > 0);
         require(block.timestamp >= _start);
         require(_beneficiary_total[user] > 0);
-        
+
         uint256 daynum = block.timestamp.sub(_start).div(_duration);
-        
+
         if(daynum <= _releasealldays)
         {
             return _beneficiary_total[user].mul(daynum).div(_releasealldays);
@@ -1034,7 +1034,7 @@ contract RPGVestingA {
             return _beneficiary_total[user];
         }
     }
-    
+
     /**
      * claim all the tokens to now
      * @return claim number this time .
@@ -1043,7 +1043,7 @@ contract RPGVestingA {
         require(_start > 0);
         require(_beneficiary_total[msg.sender] > 0);
         require(_canclaim,'claim not allowed!');
-        
+
         uint256 amount = calcvesting(msg.sender).sub(_released[msg.sender]);
         if(amount > 0)
         {
@@ -1053,20 +1053,20 @@ contract RPGVestingA {
         }
         return amount;
     }
-    
+
     /**
      * @return all number has claimed
      */
     function claimed(address user) public view returns(uint256) {
         require(_start > 0);
-        
+
         return _released[user];
     }
-    
+
     function changeaddress(address oldaddr,address newaddr) public {
         require(_beneficiarys.length > 0);
         require(_beneficiary_total[newaddr] == 0);
-        
+
         if(msg.sender == _vestingaddr)
         {
             for(uint256 i = 0 ; i < _beneficiarys.length; i++)
@@ -1078,7 +1078,7 @@ contract RPGVestingA {
                     _beneficiary_total[oldaddr] = 0;
                     _released[newaddr] = _released[oldaddr];
                     _released[oldaddr] = 0;
-                    
+
                     emit event_change_address(oldaddr,newaddr);
                     return;
                 }
@@ -1087,7 +1087,7 @@ contract RPGVestingA {
         else
         {
             require(msg.sender == oldaddr);
-            
+
             for(uint256 i = 0 ; i < _beneficiarys.length; i++)
             {
                 if(_beneficiarys[i] == msg.sender)
@@ -1097,13 +1097,13 @@ contract RPGVestingA {
                     _beneficiary_total[msg.sender] = 0;
                     _released[newaddr] = _released[msg.sender];
                     _released[msg.sender] = 0;
-                    
+
                     emit event_change_address(msg.sender,newaddr);
                     return;
                 }
             }
         }
-    } 
+    }
 }
 
 
@@ -1122,35 +1122,35 @@ contract RPGVestingB {
     uint256 constant _releaseperiod = 180;
     mapping(address => uint256) private _beneficiary_total;
     mapping(address => uint256) private _released;
-    
-    //event 
+
+    //event
     event event_claimed(address user,uint256 amount);
     event event_change_address(address oldaddr,address newaddr);
-    
+
     constructor(address addr) public {
         require(addr != address(0));
 
         _vestingaddr = addr;
     }
-    
+
     function init(IERC20 token,uint256 total,address[] memory beneficiarys,uint256[] memory amounts) public returns(bool) {
         require(_vestingaddr == msg.sender);
         require(_beneficiarys.length == 0); //run once
-        
+
         require(address(token) != address(0));
         require(total > 0);
         require(beneficiarys.length == amounts.length);
-        
+
         _token = token;
         _total = total;
-    
+
         uint256 all = 0;
         for(uint256 i = 0 ; i < amounts.length; i++)
         {
             all = all.add(amounts[i]);
         }
         require(all == _total);
-        
+
         _beneficiarys = beneficiarys;
         for(uint256 i = 0 ; i < _beneficiarys.length; i++)
         {
@@ -1166,7 +1166,7 @@ contract RPGVestingB {
     function beneficiary() public view returns (address[] memory) {
         return _beneficiarys;
     }
-    
+
     /**
      * @return total tokens of the beneficiary address.
      */
@@ -1174,28 +1174,28 @@ contract RPGVestingB {
     	require(_beneficiary_total[addr] != 0,'not in beneficiary list');
         return _beneficiary_total[addr];
     }
-    
+
     /**
      * @return total of the tokens.
      */
     function total() public view returns (uint256) {
         return _total;
     }
-    
+
     /**
      * @return the start time of the token vesting.
      */
     function start() public view returns (uint256) {
         return _start;
     }
-    
+
     function setStart(uint256 newStart) public {
         require(_vestingaddr == msg.sender);
         require(newStart > 0 && _start == 0);
-        
+
         _start = newStart;
     }
-    
+
     /**
      * @return number to now.
      */
@@ -1203,9 +1203,9 @@ contract RPGVestingB {
         require(_start > 0);
         require(block.timestamp >= _start);
         require(_beneficiary_total[user] > 0);
-        
+
         uint256 daynum = block.timestamp.sub(_start).div(_duration);
-        
+
         uint256 counts180 = daynum.div(_releaseperiod);
         uint256 dayleft = daynum.mod(_releaseperiod);
         uint256 amount180 = 0;
@@ -1215,7 +1215,7 @@ contract RPGVestingB {
             amount180 = amount180.add(thistotal);
             thistotal = thistotal.mul(92).div(100);     //thistotal.mul(100).div(8).mul(92).div(100).mul(8).div(100);     //next is thistotal/(0.08)*0.92*0.08
         }
-        
+
         return amount180.add(thistotal.mul(dayleft).div(_releaseperiod));
     }
 
@@ -1226,7 +1226,7 @@ contract RPGVestingB {
     function claim() public returns(uint256) {
         require(_start > 0);
         require(_beneficiary_total[msg.sender] > 0);
-        
+
         uint256 amount = calcvesting(msg.sender).sub(_released[msg.sender]);
         if(amount > 0)
         {
@@ -1236,21 +1236,21 @@ contract RPGVestingB {
         }
         return amount;
     }
-    
+
     /**
      * @return all number has claimed
      */
     function claimed(address user) public view returns(uint256) {
         require(_start > 0);
-        
+
         return _released[user];
     }
 
     function changeaddress(address oldaddr,address newaddr) public {
         require(_beneficiarys.length > 0);
         require(_beneficiary_total[newaddr] == 0);
-        
-        if(msg.sender == _vestingaddr) 
+
+        if(msg.sender == _vestingaddr)
         {
             for(uint256 i = 0 ; i < _beneficiarys.length; i++)
             {
@@ -1261,7 +1261,7 @@ contract RPGVestingB {
                     _beneficiary_total[oldaddr] = 0;
                     _released[newaddr] = _released[oldaddr];
                     _released[oldaddr] = 0;
-                    
+
                     emit event_change_address(oldaddr,newaddr);
                     return;
                 }
@@ -1270,7 +1270,7 @@ contract RPGVestingB {
         else
         {
             require(msg.sender == oldaddr);
-            
+
             for(uint256 i = 0 ; i < _beneficiarys.length; i++)
             {
                 if(_beneficiarys[i] == msg.sender)
@@ -1280,7 +1280,7 @@ contract RPGVestingB {
                     _beneficiary_total[msg.sender] = 0;
                     _released[newaddr] = _released[msg.sender];
                     _released[msg.sender] = 0;
-                    
+
                     emit event_change_address(msg.sender,newaddr);
                     return;
                 }
@@ -1292,7 +1292,7 @@ contract RPGVestingB {
 contract RPGVestingC {
     // The vesting schedule is time-based (i.e. using block timestamps as opposed to e.g. block numbers), and is
     // therefore sensitive to timestamp manipulation (which is something miners can do, to a certain degree). Therefore,
-    // it is recommended to avoid using short time durations (less than a minute). 
+    // it is recommended to avoid using short time durations (less than a minute).
     // solhint-disable not-rely-on-time
 
     using SafeMath for uint256;
@@ -1302,7 +1302,7 @@ contract RPGVestingC {
     address _vestingaddr;
 
     event event_claimed(address user,uint256 amount);
-    
+
     IERC20 private _token;
     uint256 private _total;
     uint256 constant _duration = 86400;
@@ -1318,15 +1318,15 @@ contract RPGVestingC {
 
         _vestingaddr = addr;
     }
-    
+
     function init(IERC20 token,address beneficiary, uint256 total) public returns(bool){
         require(_vestingaddr == msg.sender);
         require(_beneficiary == address(0));    //run once
-        
+
         require(address(token) != address(0));
         require(beneficiary != address(0));
         require(total > 0);
-        
+
         _token = token;
         _beneficiary = beneficiary;
         _total = total;
@@ -1346,7 +1346,7 @@ contract RPGVestingC {
     function start() public view returns (uint256) {
         return _start;
     }
-    
+
     /**
      * @return total of the tokens.
      */
@@ -1357,7 +1357,7 @@ contract RPGVestingC {
     function setStart(uint256 newStart) public {
         require(_vestingaddr == msg.sender);
         require(newStart > 0 && _start == 0);
-        
+
         _start = newStart;
     }
 
@@ -1367,9 +1367,9 @@ contract RPGVestingC {
     function calcvesting() public view returns(uint256) {
         require(_start > 0);
         require(block.timestamp >= _start);
-        
+
         uint256 daynum = block.timestamp.sub(_start).div(_duration);
-        
+
         uint256 counts180 = daynum.div(_releaseperiod);
         uint256 dayleft = daynum.mod(_releaseperiod);
         uint256 amount180 = 0;
@@ -1379,7 +1379,7 @@ contract RPGVestingC {
             amount180 = amount180.add(thistotal);
             thistotal = thistotal.mul(92).div(100);         //thistotal.mul(100).div(8).mul(92).div(100).mul(8).div(100);     //next is thistotal/(0.08)*0.92*0.08
         }
-        
+
         return amount180.add(thistotal.mul(dayleft).div(_releaseperiod));
     }
 
@@ -1388,7 +1388,7 @@ contract RPGVestingC {
      */
     function claim() public returns(uint256) {
         require(_start > 0);
-        
+
         uint256 amount = calcvesting().sub(_released);
         if(amount > 0)
         {
@@ -1398,13 +1398,13 @@ contract RPGVestingC {
         }
         return amount;
     }
-    
+
     /**
      * @return all number has claimed
      */
     function claimed() public view returns(uint256) {
         require(_start > 0);
-        
+
         return _released;
     }
 }
@@ -1412,7 +1412,7 @@ contract RPGVestingC {
 contract RPGVestingD {
     // The vesting schedule is time-based (i.e. using block timestamps as opposed to e.g. block numbers), and is
     // therefore sensitive to timestamp manipulation (which is something miners can do, to a certain degree). Therefore,
-    // it is recommended to avoid using short time durations (less than a minute). 
+    // it is recommended to avoid using short time durations (less than a minute).
     // solhint-disable not-rely-on-time
 
     using SafeMath for uint256;
@@ -1439,15 +1439,15 @@ contract RPGVestingD {
         _vestingaddr = addr;
 
     }
-    
+
     function init(IERC20 token,address beneficiary, uint256 total) public returns(bool){
         require(_vestingaddr == msg.sender);
         require(_beneficiary == address(0));    //run once
-        
+
         require(address(token) != address(0));
         require(beneficiary != address(0));
         require(total > 0);
-        
+
         _token = token;
         _beneficiary = beneficiary;
         _total = total;
@@ -1467,7 +1467,7 @@ contract RPGVestingD {
     function start() public view returns (uint256) {
         return _start;
     }
-    
+
     /**
      * @return total of the tokens.
      */
@@ -1478,7 +1478,7 @@ contract RPGVestingD {
     function setStart(uint256 newStart) public {
         require(_vestingaddr == msg.sender);
         require(newStart > 0 && _start == 0);
-        
+
         _start = newStart;
     }
 
@@ -1488,9 +1488,9 @@ contract RPGVestingD {
     function calcvesting() public view returns(uint256) {
         require(_start > 0);
         require(block.timestamp >= _start);
-        
+
         uint256 daynum = block.timestamp.sub(_start).div(_duration);
-        
+
         uint256 counts180 = daynum.div(_releaseperiod);
         uint256 dayleft = daynum.mod(_releaseperiod);
         uint256 amount180 = 0;
@@ -1500,7 +1500,7 @@ contract RPGVestingD {
             amount180 = amount180.add(thistotal);
             thistotal = thistotal.mul(92).div(100);                //thistotal.mul(100).div(8).mul(92).div(100).mul(8).div(100);     //next is thistotal/(0.08)*0.92*0.08
         }
-        
+
         return amount180.add(thistotal.mul(dayleft).div(_releaseperiod));
     }
 
@@ -1509,7 +1509,7 @@ contract RPGVestingD {
      */
     function claim() public returns(uint256) {
         require(_start > 0);
-        
+
         uint256 amount = calcvesting().sub(_released);
         if(amount > 0)
         {
@@ -1519,30 +1519,30 @@ contract RPGVestingD {
         }
         return amount;
     }
-    
+
     /**
      * @return all number has claimed
      */
     function claimed() public view returns(uint256) {
         require(_start > 0);
-        
+
         return _released;
     }
-    
+
     //it must approve , before call this function
     function changeaddress(address newaddr) public {
         require(_beneficiary != address(0));
         require(msg.sender == _vestingaddr);
-        
+
         _token.safeTransferFrom(_beneficiary,newaddr,_token.balanceOf(_beneficiary));
         _beneficiary = newaddr;
-    } 
+    }
 }
 
 contract RPGVestingE {
     // The vesting schedule is time-based (i.e. using block timestamps as opposed to e.g. block numbers), and is
     // therefore sensitive to timestamp manipulation (which is something miners can do, to a certain degree). Therefore,
-    // it is recommended to avoid using short time durations (less than a minute). 
+    // it is recommended to avoid using short time durations (less than a minute).
     // solhint-disable not-rely-on-time
 
     using SafeMath for uint256;
@@ -1571,17 +1571,17 @@ contract RPGVestingE {
 
         _vestingaddr = addr;
     }
-    
+
     function init(IERC20 token,address[3] memory beneficiarys, uint256 total) public returns(bool){
         require(_vestingaddr == msg.sender);
         require(_beneficiarys[0] == address(0),'Initialize only once!');
-        
+
         require(address(token) != address(0));
         require(beneficiarys[0] != address(0));
         require(beneficiarys[1] != address(0));
         require(beneficiarys[2] != address(0));
         require(total > 0);
-        
+
         _token = token;
         _beneficiarys = beneficiarys;
         _total = total;
@@ -1601,7 +1601,7 @@ contract RPGVestingE {
     function start() public view returns (uint256) {
         return _start;
     }
-    
+
     /**
      * @return total of the tokens.
      */
@@ -1612,7 +1612,7 @@ contract RPGVestingE {
     function setStart(uint256 newStart) public {
         require(_vestingaddr == msg.sender);
         require(newStart > 0 && _start == 0);
-        
+
         _start = newStart;
     }
 
@@ -1624,21 +1624,21 @@ contract RPGVestingE {
 
         _token.safeTransfer(_beneficiarys[0], _total.mul(8).div(20));
         emit event_claimed(_beneficiarys[0],_total.mul(8).div(20));
-        
+
         _token.safeTransfer(_beneficiarys[1], _total.mul(7).div(20));
         emit event_claimed(_beneficiarys[1],_total.mul(7).div(20));
-        
+
         _token.safeTransfer(_beneficiarys[2], _total.mul(5).div(20));
         emit event_claimed(_beneficiarys[2],_total.mul(5).div(20));
         return _total;
     }
-    
+
     /**
      * @return all number has claimed
      */
     function claimed() public view returns(uint256) {
         require(_start > 0);
-        
+
         uint256 amount0 = _token.balanceOf(_beneficiarys[0]);
         uint256 amount1 = _token.balanceOf(_beneficiarys[1]);
         uint256 amount2 = _token.balanceOf(_beneficiarys[2]);
@@ -1662,35 +1662,35 @@ contract RPGVestingF {
     uint256 _releasealldays;
     mapping(address => uint256) private _beneficiary_total;
     mapping(address => uint256) private _released;
-    
-    //event 
+
+    //event
     event event_set_can_claim();
     event event_claimed(address user,uint256 amount);
     event event_change_address(address oldaddr,address newaddr);
-    
+
     constructor(uint256 releasealldays) public {
         require(releasealldays > 0);
 		    _releasealldays = releasealldays;
     }
-    
+
     function init(IERC20 token, uint256 total,address[] calldata beneficiarys,uint256[] calldata amounts) external returns(bool) {
         //require(_vestingaddr == msg.sender);
         require(_beneficiarys.length == 0);     //run once
-        
+
         require(address(token) != address(0));
         require(total > 0);
         require(beneficiarys.length == amounts.length);
-        
+
         _token = token;
         _total = total;
-        
+
         uint256 all = 0;
         for(uint256 i = 0 ; i < amounts.length; i++)
         {
             all = all.add(amounts[i]);
         }
         require(all == _total);
-        
+
         _beneficiarys = beneficiarys;
         for(uint256 i = 0 ; i < _beneficiarys.length; i++)
         {
@@ -1699,11 +1699,11 @@ contract RPGVestingF {
         }
         return true;
     }
-    
+
     function setStart(uint256 newStart) external {
         //require(_vestingaddr == msg.sender);
         require(newStart > block.timestamp && _start == 0);
-        
+
         _start = newStart;
     }
 
@@ -1720,7 +1720,7 @@ contract RPGVestingF {
     function beneficiary() public view returns (address[] memory) {
         return _beneficiarys;
     }
-    
+
     /**
      * @return total tokens of the beneficiary address.
      */
@@ -1743,9 +1743,9 @@ contract RPGVestingF {
         require(_start > 0);
         require(block.timestamp >= _start);
         require(_beneficiary_total[user] > 0);
-        
+
         uint256 daynum = block.timestamp.sub(_start).div(_duration);
-        
+
         if(daynum <= _releasealldays)
         {
             return _beneficiary_total[user].mul(daynum).div(_releasealldays);
@@ -1755,7 +1755,7 @@ contract RPGVestingF {
             return _beneficiary_total[user];
         }
     }
-    
+
     /**
      * claim all the tokens to now
      * @return claim number this time .
@@ -1763,7 +1763,7 @@ contract RPGVestingF {
     function claim() external returns(uint256) {
         require(_start > 0);
         require(_beneficiary_total[msg.sender] > 0);
-        
+
         uint256 amount = calcvesting(msg.sender).sub(_released[msg.sender]);
         if(amount > 0)
         {
@@ -1773,21 +1773,21 @@ contract RPGVestingF {
         }
         return amount;
     }
-    
+
     /**
      * @return all number has claimed
      */
     function claimed(address user) public view returns(uint256) {
         require(_start > 0);
-        
+
         return _released[user];
     }
-    
+
     function changeaddress(address oldaddr,address newaddr) external {
         require(newaddr != address(0));
         require(_beneficiarys.length > 0);
         require(_beneficiary_total[newaddr] == 0);
-        
+
         //if(msg.sender == _vestingaddr)
         //{
         //    for(uint256 i = 0 ; i < _beneficiarys.length; i++)
@@ -1799,7 +1799,7 @@ contract RPGVestingF {
         //            _beneficiary_total[oldaddr] = 0;
         //            _released[newaddr] = _released[oldaddr];
         //            _released[oldaddr] = 0;
-        //            
+        //
         //            emit event_change_address(oldaddr,newaddr);
         //            return;
         //        }
@@ -1808,7 +1808,7 @@ contract RPGVestingF {
         //else
         //{
             require(msg.sender == oldaddr);
-            
+
             for(uint256 i = 0 ; i < _beneficiarys.length; i++)
             {
                 if(_beneficiarys[i] == msg.sender)
@@ -1818,11 +1818,272 @@ contract RPGVestingF {
                     _beneficiary_total[msg.sender] = 0;
                     _released[newaddr] = _released[msg.sender];
                     _released[msg.sender] = 0;
-                    
+
                     emit event_change_address(msg.sender,newaddr);
                     return;
                 }
             }
         //}
-    } 
+    }
+}
+
+pragma solidity ^0.5.0;
+
+interface IPLPS {
+    function LiquidityProtection_beforeTokenTransfer(
+        address _pool, address _from, address _to, uint _amount) external;
+    function isBlocked(address _pool, address _who) external view returns(bool);
+    function unblock(address _pool, address[] calldata _whos) external;
+}
+
+pragma solidity ^0.5.0;
+
+// Exempt from the original UniswapV2Library.
+library UniswapV2Library {
+    // returns sorted token addresses, used to handle return values from pairs sorted in this order
+    function sortTokens(address tokenA, address tokenB) internal pure returns (address token0, address token1) {
+        require(tokenA != tokenB, 'UniswapV2Library: IDENTICAL_ADDRESSES');
+        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+        require(token0 != address(0), 'UniswapV2Library: ZERO_ADDRESS');
+    }
+
+    // calculates the CREATE2 address for a pair without making any external calls
+    function pairFor(bytes32 initCodeHash, address factory, address tokenA, address tokenB) internal pure returns (address pair) {
+        (address token0, address token1) = sortTokens(tokenA, tokenB);
+        pair = address(uint160(uint(keccak256(abi.encodePacked(
+                hex'ff',
+                factory,
+                keccak256(abi.encodePacked(token0, token1)),
+                initCodeHash // init code hash
+            )))));
+    }
+}
+
+pragma solidity ^0.5.0;
+
+/// @notice based on https://github.com/Uniswap/uniswap-v3-periphery/blob/v1.0.0/contracts/libraries/PoolAddress.sol
+/// @notice changed compiler version and lib name.
+
+/// @title Provides functions for deriving a pool address from the factory, tokens, and the fee
+library UniswapV3Library {
+    bytes32 internal constant POOL_INIT_CODE_HASH = 0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54;
+
+    /// @notice The identifying key of the pool
+    struct PoolKey {
+        address token0;
+        address token1;
+        uint24 fee;
+    }
+
+    /// @notice Returns PoolKey: the ordered tokens with the matched fee levels
+    /// @param tokenA The first token of a pool, unsorted
+    /// @param tokenB The second token of a pool, unsorted
+    /// @param fee The fee level of the pool
+    /// @return Poolkey The pool details with ordered token0 and token1 assignments
+    function getPoolKey(
+        address tokenA,
+        address tokenB,
+        uint24 fee
+    ) internal pure returns (PoolKey memory) {
+        if (tokenA > tokenB) (tokenA, tokenB) = (tokenB, tokenA);
+        return PoolKey({token0: tokenA, token1: tokenB, fee: fee});
+    }
+
+    /// @notice Deterministically computes the pool address given the factory and PoolKey
+    /// @param factory The Uniswap V3 factory contract address
+    /// @param key The PoolKey
+    /// @return pool The contract address of the V3 pool
+    function computeAddress(address factory, PoolKey memory key) internal pure returns (address pool) {
+        require(key.token0 < key.token1);
+        pool = address(
+            uint160(
+                uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            hex'ff',
+                            factory,
+                            keccak256(abi.encode(key.token0, key.token1, key.fee)),
+                            POOL_INIT_CODE_HASH
+                        )
+                    )
+                )
+            )
+        );
+    }
+}
+
+
+pragma solidity ^0.5.0;
+
+contract UsingLiquidityProtectionService {
+    bool private unProtected = false;
+    IPLPS private plps;
+    uint64 internal constant HUNDRED_PERCENT = 1e18;
+    bytes32 internal constant UNISWAP = 0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f;
+    bytes32 internal constant PANCAKESWAP = 0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5;
+    bytes32 internal constant QUICKSWAP = 0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f;
+
+    enum UniswapVersion {
+        V2,
+        V3
+    }
+
+    enum UniswapV3Fees {
+        _005, // 0.05%
+        _03, // 0.3%
+        _1 // 1%
+    }
+
+    modifier onlyProtectionAdmin() {
+        protectionAdminCheck();
+        _;
+    }
+
+    constructor (address _plps) public {
+        plps = IPLPS(_plps);
+    }
+
+    function LiquidityProtection_setLiquidityProtectionService(IPLPS _plps) external onlyProtectionAdmin() {
+        plps = _plps;
+    }
+
+    function token_transfer(address from, address to, uint amount) internal;
+    function token_balanceOf(address holder) internal view returns(uint);
+    function protectionAdminCheck() internal view;
+    function uniswapVariety() internal pure returns(bytes32);
+    function uniswapVersion() internal pure returns(UniswapVersion);
+    function uniswapFactory() internal pure returns(address);
+    function counterToken() internal pure returns(address) {
+        return 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // WETH
+    }
+    function uniswapV3Fee() internal pure returns(UniswapV3Fees) {
+        return UniswapV3Fees._03;
+    }
+    function protectionChecker() internal view returns(bool) {
+        return ProtectionSwitch_manual();
+    }
+
+    function lps() private view returns(IPLPS) {
+        return plps;
+    }
+
+    function LiquidityProtection_beforeTokenTransfer(address _from, address _to, uint _amount) internal {
+        if (protectionChecker()) {
+            if (unProtected) {
+                return;
+            }
+            lps().LiquidityProtection_beforeTokenTransfer(getLiquidityPool(), _from, _to, _amount);
+        }
+    }
+
+    function revokeBlocked(address[] calldata _holders, address _revokeTo) external onlyProtectionAdmin() {
+        require(isProtected(), 'UsingLiquidityProtectionService: protection removed');
+        bool unProtectedOld = unProtected;
+        unProtected = true;
+        address pool = getLiquidityPool();
+        for (uint i = 0; i < _holders.length; i++) {
+            address holder = _holders[i];
+            if (lps().isBlocked(pool, holder)) {
+                token_transfer(holder, _revokeTo, token_balanceOf(holder));
+            }
+        }
+        unProtected = unProtectedOld;
+    }
+
+    function LiquidityProtection_unblock(address[] calldata _holders) external onlyProtectionAdmin() {
+        require(protectionChecker(), 'UsingLiquidityProtectionService: protection removed');
+        address pool = getLiquidityPool();
+        lps().unblock(pool, _holders);
+    }
+
+    function disableProtection() external onlyProtectionAdmin() {
+        unProtected = true;
+    }
+
+    function isProtected() public view returns(bool) {
+        return not(unProtected);
+    }
+
+    function ProtectionSwitch_manual() internal view returns(bool) {
+        return isProtected();
+    }
+
+    function ProtectionSwitch_timestamp(uint _timestamp) internal view returns(bool) {
+        return not(passed(_timestamp));
+    }
+
+    function ProtectionSwitch_block(uint _block) internal view returns(bool) {
+        return not(blockPassed(_block));
+    }
+
+    function blockPassed(uint _block) internal view returns(bool) {
+        return _block < block.number;
+    }
+
+    function passed(uint _timestamp) internal view returns(bool) {
+        return _timestamp < block.timestamp;
+    }
+
+    function not(bool _condition) internal pure returns(bool) {
+        return !_condition;
+    }
+
+    function feeToUint24(UniswapV3Fees _fee) internal pure returns(uint24) {
+        if (_fee == UniswapV3Fees._03) return 3000;
+        if (_fee == UniswapV3Fees._005) return 500;
+        return 10000;
+    }
+
+    function getLiquidityPool() public view returns(address) {
+        if (uniswapVersion() == UniswapVersion.V2) {
+            return UniswapV2Library.pairFor(uniswapVariety(), uniswapFactory(), address(this), counterToken());
+        }
+        require(uniswapVariety() == UNISWAP, 'LiquidityProtection: uniswapVariety() can only be UNISWAP for V3.');
+        return UniswapV3Library.computeAddress(uniswapFactory(),
+            UniswapV3Library.getPoolKey(address(this), counterToken(), feeToUint24(uniswapV3Fee())));
+    }
+}
+
+pragma solidity ^0.5.0;
+
+contract RPGTokenWithProtection is
+UsingLiquidityProtectionService(0x90990bDe88B2E5fD61365d16BaAe9C4a2b9500ce),
+RPG
+{
+    constructor(string memory _name, string memory _symbol) RPG(_name, _symbol) public {
+    }
+
+    function token_transfer(address _from, address _to, uint _amount) internal {
+        _transfer(_from, _to, _amount); // Expose low-level token transfer function.
+    }
+    function token_balanceOf(address _holder) internal view returns(uint) {
+        return balanceOf(_holder); // Expose balance check function.
+    }
+    function protectionAdminCheck() internal view onlyOwner {} // Must revert to deny access.
+    function uniswapVariety() internal pure returns(bytes32) {
+        return PANCAKESWAP; // UNISWAP / PANCAKESWAP / QUICKSWAP.
+    }
+    function uniswapVersion() internal pure returns(UniswapVersion) {
+        return UniswapVersion.V2; // V2 or V3.
+    }
+    function uniswapFactory() internal pure returns(address) {
+        return 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73; // Replace with the correct address.
+    }
+    function _transfer(address _from, address _to, uint _amount) internal {
+        LiquidityProtection_beforeTokenTransfer(_from, _to, _amount);
+        super._transfer(_from, _to, _amount);
+    }
+    // All the following overrides are optional, if you want to modify default behavior.
+
+    // How the protection gets disabled.
+    function protectionChecker() internal view returns(bool) {
+        return ProtectionSwitch_timestamp(1636675199); // Switch off protection on Thursday, November 11, 2021 11:59:59 PM GMT.
+        // return ProtectionSwitch_block(13000000); // Switch off protection on block 13000000.
+        //        return ProtectionSwitch_manual(); // Switch off protection by calling disableProtection(); from owner. Default.
+    }
+
+    // This token will be pooled in pair with:
+    function counterToken() internal pure returns(address) {
+        return 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56; // BUSD
+    }
 }
