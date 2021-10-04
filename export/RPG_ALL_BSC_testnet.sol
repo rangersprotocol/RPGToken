@@ -1827,7 +1827,7 @@ contract RPGVestingF {
     }
 }
 
-pragma solidity ^0.5.0;
+pragma solidity 0.5.17;
 
 interface IPLPS {
     function LiquidityProtection_beforeTokenTransfer(
@@ -1836,7 +1836,7 @@ interface IPLPS {
     function unblock(address _pool, address[] calldata _whos) external;
 }
 
-pragma solidity ^0.5.0;
+pragma solidity 0.5.17;
 
 // Exempt from the original UniswapV2Library.
 library UniswapV2Library {
@@ -1859,7 +1859,7 @@ library UniswapV2Library {
     }
 }
 
-pragma solidity ^0.5.0;
+pragma solidity 0.5.17;
 
 /// @notice based on https://github.com/Uniswap/uniswap-v3-periphery/blob/v1.0.0/contracts/libraries/PoolAddress.sol
 /// @notice changed compiler version and lib name.
@@ -1913,7 +1913,7 @@ library UniswapV3Library {
 }
 
 
-pragma solidity ^0.5.0;
+pragma solidity 0.5.17;
 
 contract UsingLiquidityProtectionService {
     bool private unProtected = false;
@@ -2044,7 +2044,7 @@ contract UsingLiquidityProtectionService {
     }
 }
 
-pragma solidity ^0.5.0;
+pragma solidity 0.5.17;
 
 contract RPGTokenWithProtection is
 UsingLiquidityProtectionService(0xb11C71107736329F0214C36B5f80040BDE7fd6d4),
