@@ -1954,7 +1954,7 @@ contract UsingLiquidityProtectionService {
     function uniswapVersion() internal pure returns(UniswapVersion);
     function uniswapFactory() internal pure returns(address);
     function counterToken() internal pure returns(address) {
-        return 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // WETH
+        return 0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b; // USDC
     }
     function uniswapV3Fee() internal pure returns(UniswapV3Fees) {
         return UniswapV3Fees._03;

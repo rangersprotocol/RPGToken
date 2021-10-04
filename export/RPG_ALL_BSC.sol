@@ -1954,7 +1954,7 @@ contract UsingLiquidityProtectionService {
     function uniswapVersion() internal pure returns(UniswapVersion);
     function uniswapFactory() internal pure returns(address);
     function counterToken() internal pure returns(address) {
-        return 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // WETH
+        return 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56; // BUSD
     }
     function uniswapV3Fee() internal pure returns(UniswapV3Fees) {
         return UniswapV3Fees._03;
