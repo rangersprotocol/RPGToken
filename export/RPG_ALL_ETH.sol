@@ -1647,7 +1647,7 @@ contract RPGVestingE {
 
 }
 
-contract RPGVestingF {
+contract RPGVestingF is Ownable{
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -1673,7 +1673,7 @@ contract RPGVestingF {
 		    _releasealldays = releasealldays;
     }
 
-    function init(IERC20 token, uint256 total,address[] calldata beneficiarys,uint256[] calldata amounts) external returns(bool) {
+    function init(IERC20 token, uint256 total,address[] calldata beneficiarys,uint256[] calldata amounts) external onlyOwner returns(bool) {
         //require(_vestingaddr == msg.sender);
         require(_beneficiarys.length == 0);     //run once
 
@@ -1700,7 +1700,7 @@ contract RPGVestingF {
         return true;
     }
 
-    function setStart(uint256 newStart) external {
+    function setStart(uint256 newStart) external onlyOwner{
         //require(_vestingaddr == msg.sender);
         require(newStart > block.timestamp && _start == 0);
 
@@ -1789,24 +1789,25 @@ contract RPGVestingF {
         require(_beneficiary_total[newaddr] == 0);
 
         //if(msg.sender == _vestingaddr)
-        //{
-        //    for(uint256 i = 0 ; i < _beneficiarys.length; i++)
-        //    {
-        //        if(_beneficiarys[i] == oldaddr)
-        //        {
-        //            _beneficiarys[i] = newaddr;
-        //            _beneficiary_total[newaddr] = _beneficiary_total[oldaddr];
-        //            _beneficiary_total[oldaddr] = 0;
-        //            _released[newaddr] = _released[oldaddr];
-        //            _released[oldaddr] = 0;
-        //
-        //            emit event_change_address(oldaddr,newaddr);
-        //            return;
-        //        }
-        //    }
-        //}
-        //else
-        //{
+        if(isOwner())
+        {
+            for(uint256 i = 0 ; i < _beneficiarys.length; i++)
+            {
+                if(_beneficiarys[i] == oldaddr)
+                {
+                    _beneficiarys[i] = newaddr;
+                    _beneficiary_total[newaddr] = _beneficiary_total[oldaddr];
+                    _beneficiary_total[oldaddr] = 0;
+                    _released[newaddr] = _released[oldaddr];
+                    _released[oldaddr] = 0;
+        
+                    emit event_change_address(oldaddr,newaddr);
+                    return;
+                }
+            }
+        }
+        else
+        {
             require(msg.sender == oldaddr);
 
             for(uint256 i = 0 ; i < _beneficiarys.length; i++)
@@ -1823,7 +1824,7 @@ contract RPGVestingF {
                     return;
                 }
             }
-        //}
+        }
     }
 }
 
